@@ -17,7 +17,6 @@ lake <- read.csv("http://math.carleton.edu/kstclair/data/BergenData.csv")
 ```{r}
 summary(lake$distance)
 sd(lake$distance)
-
 distance <- lake$distance
 ```
 
