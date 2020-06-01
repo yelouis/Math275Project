@@ -1,0 +1,110 @@
+---
+title: "Math 275 Project"
+author: "Math 275, St Clair"
+output: html_document
+---
+
+```{r, include=FALSE}
+
+knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, eval=FALSE, warning=FALSE, message=FALSE)
+
+library(dplyr)
+library(tidyverse)
+
+lake <- read.csv("http://math.carleton.edu/kstclair/data/BergenData.csv")
+```
+
+```{r}
+summary(lake$distance)
+sd(lake$distance)
+
+distance <- lake$distance
+```
+
+```{r}
+simsize <- 100 # simulations being run
+n <- 30 #sample size
+sigma <- 0.5 # value of sigma for ML estimate
+N <- 1000 #bootstrap
+mle_boot_lower <- mle_lower <- rep(NA,simsize)
+mle_boot_upper <- mle_upper <- rep(NA,simsize)
+mom_boot_lower <- mle_lower <- rep(NA,simsize)
+mom_boot_upper <- mle_upper <- rep(NA,simsize)
+x_boot_MLE <- rep(NA,N)
+x_boot_MOM <- rep(NA,N)
+
+for (i in 1:simsize)
+{
+  x <- abs(rnorm(n,0,sigma))   # generating half normal random sample, repeat this
+  est_mle <- sum(x^2)/n # MLE formula
+  est_mom <- (pi*mean(x)^2)/2 # MoM formula
+  
+  mle_lower[i] <- (sum(x^2)/n)/qgamma(0.975, n/2, n/2) # based on exact MLE CI (part d)
+  mle_upper[i] <- (sum(x^2)/n)/qgamma(0.0275, n/2, n/2)# based on exact MLE CI (part d)
+  
+  for (j in 1:N)
+  {
+    x_boot <- sample(x, replace=TRUE)
+    x_boot_MLE[j] <- sum(x_boot^2)/n
+    x_boot_MOM[j] <- (pi*mean(x_boot)^2)/2
+  }
+  
+  mle_boot_lower[i] <- (mean(x)-quantile(x_boot_MLE,0.975)*sqrt(var(x)/n)) # CI based on bootstrapping the MLE
+  mle_boot_upper[i] <- (mean(x)-quantile(x_boot_MLE,0.025)*sqrt(var(x)/n))
+  mom_boot_lower[i] <- (mean(x)-quantile(x_boot_MOM,0.975)*sqrt(var(x)/n))# CI based on bootstrapping the MoM
+  mom_boot_upper[i] <- (mean(x)-quantile(x_boot_MOM,0.025)*sqrt(var(x)/n))
+}
+  
+mean(mle_boot_lower)
+mean(mle_boot_upper)
+mean(mom_boot_lower)
+mean(mom_boot_upper)
+
+```
+```{r}
+mle_bias <- mean(est_mle) - sigma^2  
+perc_bias <- 100*mle_bias/sigma^2  # bias as a percentage of sigma^2
+mse <- mean((est_mle - sigma^2)^2) # mean of squared deviations (est - truth)^2
+
+mom_bias <- mean(est_mom) - sigma^2  
+perc_bias <- 100*mom_bias/sigma^2  # bias as a percentage of sigma^2
+mse <- mean((est_mom - sigma^2)^2) # mean of squared deviations (est - truth)^2
+
+```
+
+```{r}
+mle_cover <- mean((mle_boot_lower <= sigma^2) & (sigma^2 <= mle_boot_upper))
+mle_mean.length <- mean(mean(mle_boot_upper) - mean(mle_boot_lower))
+
+mom_cover <- mean((mom_boot_lower <= sigma^2) & (sigma^2 <= mom_boot_upper))
+mom_mean.length <- mean(mean(mom_boot_upper) - mean(mom_boot_lower))
+```
+
+#Estimation for Bergen
+```{r}
+mle_berg <- (sum(distance^2))/length(distance)
+mle_berg_lower <- sum(distance^2)/qgamma(0.975, shape = length(distance)/2,rate = 1/2)
+mle_berg_upper <- sum(distance^2)/qgamma(0.025, shape = length(distance)/2,rate = 1/2)
+
+#Distance of 0.5 meters
+#lower
+exp(-(0.5^2)/(2*mle_berg_lower^2))
+
+#upper
+exp(-(0.5^2)/(2*mle_berg_upper^2))
+
+#p value
+exp(-(0.5^2)/(2*mle_berg^2))
+
+#Distance of 1m
+#lower
+exp(-(1^2)/(2*mle_berg_lower^2))
+
+#upper
+exp(-(1^2)/(2*mle_berg_upper^2))
+
+#p value
+exp(-(1^2)/(2*mle_berg^2))
+
+```
+
