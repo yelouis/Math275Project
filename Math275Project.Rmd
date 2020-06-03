@@ -21,7 +21,7 @@ The problem that we are exploring in this project is understanding estimation op
 # Methods:
 
 ### Derivation Results:
-
+More information about the derivation can be found in the appendix.
 **Sampling Distribution of $\hat{\sigma}_{MLE}^2$:**
 $$\hat{\sigma}_{MLE}^2 \sim Gamma(\frac{n}{2}, \frac{n}{2 \sigma ^2})$$
 
