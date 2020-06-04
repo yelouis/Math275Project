@@ -6,7 +6,7 @@ output: html_document
 
 ```{r, include=FALSE}
 
-knitr::opts_chunk$set(collapse=TRUE, prompt=TRUE, comment=NULL, eval=FALSE, warning=FALSE, message=FALSE)
+knitr::opts_chunk$set(echo = TRUE, warnings=FALSE, message = FALSE, prompt = TRUE, comment = NULL)
 
 library(dplyr)
 library(tidyverse)
@@ -14,6 +14,28 @@ library(tidyverse)
 lake <- read.csv("http://math.carleton.edu/kstclair/data/BergenData.csv")
 ```
 
+# Introduction:
+
+The problem that we are exploring in this project is understanding estimation options for a "half normal" distribution. We are using distance data from Bergen lake. The idea is that the further out a mussle is from the transect, the lower its probability of detection. This is what the "half normal" distribution models.
+
+# Methods:
+
+### Derivation Results:
+More information about the derivation can be found in the appendix.
+**Sampling Distribution of $\hat{\sigma}_{MLE}^2$:**
+$$\hat{\sigma}_{MLE}^2 \sim Gamma(\frac{n}{2}, \frac{n}{2 \sigma ^2})$$
+
+**MoM Estimator $\hat{\sigma}_{MoM}^2$ for $\sigma^2$:**
+$$\sigma ^ 2 = \frac{\pi \bar X ^2}{2}$$
+
+**Bias of MLE and MoM estimators of $\sigma ^2$:**
+$$Bias(\sigma_{MLE}^2) = 0 \\ Bias(\sigma_{MoM}^2) = \frac{\pi \sigma^2 - 2 \sigma ^2}{2n}$$
+
+**Find the exact 95% confidence interval of $\sigma ^2$:**
+$$L(x)=\frac{\bar{X}^2}{q_{0.975}} \\ U(x) = \frac{\bar{X}^2}{q_{0.025}}$$
+q = quantiles from $Gamma(\frac{n}{2}, \frac{n}{2})$
+
+### Simulation:
 ```{r}
 summary(lake$distance)
 sd(lake$distance)
@@ -68,7 +90,6 @@ mse <- mean((est_mle - sigma^2)^2) # mean of squared deviations (est - truth)^2
 mom_bias <- mean(est_mom) - sigma^2  
 perc_bias <- 100*mom_bias/sigma^2  # bias as a percentage of sigma^2
 mse <- mean((est_mom - sigma^2)^2) # mean of squared deviations (est - truth)^2
-
 ```
 
 ```{r}
@@ -79,7 +100,7 @@ mom_cover <- mean((mom_boot_lower <= sigma^2) & (sigma^2 <= mom_boot_upper))
 mom_mean.length <- mean(mean(mom_boot_upper) - mean(mom_boot_lower))
 ```
 
-#Estimation for Bergen
+### Estimation for Bergen
 ```{r}
 mle_berg <- (sum(distance^2))/length(distance)
 mle_berg_lower <- sum(distance^2)/qgamma(0.975, shape = length(distance)/2,rate = 1/2)
@@ -104,6 +125,37 @@ exp(-(1^2)/(2*mle_berg_upper^2))
 
 #p value
 exp(-(1^2)/(2*mle_berg^2))
-
 ```
 
+# Results:
+
+# Discussion:
+
+# Appendix:
+
+### Derivations:
+**Sampling Distribution of $\hat{\sigma}_{MLE} ^2$:**
+$$X \sim HalfNormal(\sigma^2) \\ W = X^2 \\ F_W(w)=P(W \leq w)=P(X^2 \leq w)=P(X \leq \sqrt{w})=F_X(\sqrt{w})$$
+We don't have to worry about $\sqrt w$ being negative.
+
+PDF:
+$$f_W(w)=\frac{d}{dw}F_X(\sqrt{w})=f_X(\sqrt w)*\frac{d}{dw}\sqrt{w} \\ =\frac{1}{\sqrt{2\pi w}\sigma}e^{-w/2\sigma^2} \implies Gamma(\frac{1}{2}, \frac{1}{2\sigma^2})$$
+
+$$X_i^2 = W_i \sim Gamma(\frac{1}{2}, \frac{1}{2\sigma^2}) \\ \hat{\sigma}^2_{MLE}=\frac{\sum X_i^2}{n}=\frac{\sum W_i}{n} \implies Gamma(n*\frac{1}{2}, \frac{\frac{1}{2\sigma ^2}}{\frac{1}{n}}) \\ \implies Gamma(\frac{n}{2}, \frac{n}{2 \sigma ^2})$$
+**MoM Estimator $\hat{\sigma}^2_{MoM}$ for $\sigma ^2$:**
+$$E(X) = \sigma \sqrt{\frac{2}{\pi}} \\ \implies \sigma= \frac{\bar{X}}{\sqrt{\frac{2}{\pi}}} \\ \implies \sigma ^2 = \frac{\pi \bar{X}^2}{2}$$
+
+**Bias of MLE and MoM estimators of $\sigma ^2$:**
+$$E(X^2) = Var(X)+E(X)^2 = \sigma^2(1-\frac{2}{\pi})+\sigma^2 \frac{2}{\pi}=\sigma ^2 \\ E(\sigma^2_{MLE})=E(\sum \frac{X_i^2}{n})=\frac{1}{n}\sum E(X_i^2)=\frac{1}{n}\sum \sigma^2=\frac{1}{n}*n\sigma^2=\sigma^2 \\ Bias(\sigma^2_{MLE}) = \sigma^2 - \sigma^2 = 0$$
+
+$$E(\bar{X}^2)=Var(\bar{X}) + E(\bar{X})^2=\frac{Var(X)}{n}+E(X)^2=\frac{\sigma^2 -\frac{2}{\pi}}{n}+\sigma^2\frac{2}{\pi} \\ E(\sigma^2_{MoM})=E(\frac{\pi\bar{X}^2}{2})=\frac{\pi}{2}E(\bar{X}^2)=\frac{\pi}{2}(\frac{\sigma^2 -\frac{2}{\pi}}{n}+\sigma^2\frac{2}{\pi})=\frac{\pi \sigma^2 - 2\sigma^2}{2n} + \sigma^2 \\ Bias(\sigma^2_{MoM})=(\frac{\pi \sigma^2 - 2\sigma^2}{2n} + \sigma^2) - \sigma^2=\frac{\pi \sigma^2 - 2\sigma^2}{2n}$$
+
+**Find the exact 95% confidence interval of $\sigma ^2$:**
+$$X^2_i = W_i \sim Gamma(\frac{1}{2}, \frac{1}{2\sigma^2}) \\ \frac{\sum X^2_i}{n} = \frac{\sum W_i}{n} \implies \bar W \sim Gamma(\frac{n}{2}, \frac{n}{2\sigma^2})$$
+The Pivotal Statistic needs to be a function of $\sigma^2$ and the distribution does not involve $\sigma^2$:
+
+$$\frac{1}{\sigma^2}\bar{W} \sim Gamma(\frac{n}{2}, \frac{n}{2})$$
+
+**Confidence Interval:**
+$$1 - \alpha = P(q_{\alpha/2} \leq \frac{\bar{W}}{\sigma^2} \leq q_{1-\alpha/2})=P(\frac{q_{\alpha/2}}{\bar{W}} \leq \frac{1}{\sigma^2} \leq \frac{q_{1-\alpha/2}}{\bar{W}}) = P(\frac{\bar{W}}{q_{\alpha/2}} \geq \sigma^2 \geq \frac{\bar{W}}{q_{1-\alpha/2}}) \\ = P(\frac{\bar{X^2}}{q_{\alpha/2}} \geq \sigma^2 \geq \frac{\bar{X^2}}{q_{1-\alpha/2}}) \\ L(x) = \frac{\bar{X^2}}{q_{0.975}} \\ U(x) = 
+\frac{\bar{X^2}}{q_{0.025}} \\ q = Quanitles From Gamma(\frac{n}{2}, \frac{n}{2})$$
