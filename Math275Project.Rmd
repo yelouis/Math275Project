@@ -1,7 +1,7 @@
 ---
 title: "Math 275 Project"
 author: "Math 275, St Clair"
-output: html_document
+output: pdf_document
 ---
 
 ```{r, include=FALSE}
@@ -69,10 +69,11 @@ for (i in 1:simsize)
     x_boot_MLE[j] <- sum(x_boot^2)/n
     x_boot_MOM[j] <- (pi*mean(x_boot)^2)/2
   }
-  
-  mle_boot_lower[i] <- (mean(x)-quantile(x_boot_MLE,0.975)*sqrt(var(x)/n)) # CI based on bootstrapping the MLE
+  # CI based on bootstrapping the MLE
+  mle_boot_lower[i] <- (mean(x)-quantile(x_boot_MLE,0.975)*sqrt(var(x)/n)) 
   mle_boot_upper[i] <- (mean(x)-quantile(x_boot_MLE,0.025)*sqrt(var(x)/n))
-  mom_boot_lower[i] <- (mean(x)-quantile(x_boot_MOM,0.975)*sqrt(var(x)/n))# CI based on bootstrapping the MoM
+  # CI based on bootstrapping the MoM
+  mom_boot_lower[i] <- (mean(x)-quantile(x_boot_MOM,0.975)*sqrt(var(x)/n))
   mom_boot_upper[i] <- (mean(x)-quantile(x_boot_MOM,0.025)*sqrt(var(x)/n))
 }
   
