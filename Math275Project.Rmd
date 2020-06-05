@@ -128,8 +128,10 @@ exp(-(1^2)/(2*mle_berg^2))
 ```
 
 # Results:
+After running these simulations we opted for a maximum likelihood estimator. We felt that based on the setting of the problem as well as general distributions it was better to have that. We are also operating based off the sample data so for future references this may be difficult to achieve. 
 
 # Discussion:
+The difficulty in this model for us in particular was the lack of understanding with the use of it. While it may be particular to wildlife tracking or observation, it was relatively novel for us and we struggled with bigger picture application. However the statistical numbers associated with this were a little bit clearer. We evaluated the different estimators and the Bergen estimates that it produced.
 
 # Appendix:
 
